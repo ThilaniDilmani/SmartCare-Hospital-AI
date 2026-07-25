@@ -27,32 +27,33 @@
   Classifying patients into disease risk categories (Multi-Class: Low / Medium / High)
 
 ## 📂 Project Structure
-
+```
 CCS3440-SmartCare-AI-Coursework/
 │
-├── data/ # Dataset files
-│ ├── smartcare_ai_dataset_1000.csv
-│ └── smartcare_ai_dataset_data_dictionary.csv
+├── data/                          # Dataset files
+│   ├── smartcare_ai_dataset_1000.csv
+│   └── smartcare_ai_dataset_data_dictionary.csv
 │
-├── notebooks/ # Jupyter notebooks
-│ └── smartcare_analysis.ipynb
+├── notebooks/                     # Jupyter notebooks
+│   └── smartcare_analysis.ipynb
 │
-├── src/ # Python source code (.py scripts)
-│ ├── preprocessing.py
-│ ├── feature_engineering.py
-│ ├── train_models.py
-│ └── evaluate.py
+├── src/                           # Python source code (.py scripts)
+│   ├── preprocessing.py
+│   ├── feature_engineering.py
+│   ├── train_models.py
+│   └── evaluate.py
 │
-├── models/ # Trained model files (.pkl / .joblib)
+├── models/                        # Trained model files (.pkl / .joblib)
 │
-├── prototype/ # Streamlit/Flask prototype app
-│ └── app.py
+├── prototype/                     # Streamlit/Flask prototype app
+│   └── app.py
 │
-├── report/ # Technical report (PDF)
-│ └── CCS3440_Technical_Report.pdf
+├── report/                        # Technical report (PDF)
+│   └── CCS3440_Technical_Report.pdf
 │
 ├── .gitignore
 └── README.md
+```
 
 ## 🛠️ Technologies Used
 - **Language:** Python
