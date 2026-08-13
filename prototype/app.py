@@ -6,17 +6,42 @@ import joblib
 # Page config
 st.set_page_config(page_title="SmartCare Risk Predictor", layout="wide")
 
-# Load model artifacts (cached so they load once, not on every rerun)
+# Load model artifacts
 @st.cache_resource
 def load_artifacts():
     model = joblib.load('disease_risk_model.pkl')
     scaler = joblib.load('scaler.pkl')
-    encoders = joblib.load('encoders.pkl')
-    target_encoder = joblib.load('target_encoder.pkl')
+    category_values = joblib.load('category_values.pkl')
+    target_encoding = joblib.load('target_encoding.pkl')          # {'Low':0,'Medium':1,'High':2}
     feature_columns = joblib.load('feature_columns.pkl')
-    return model, scaler, encoders, target_encoder, feature_columns
+    numeric_cols_to_scale = joblib.load('numeric_cols_to_scale.pkl')
+    return model, scaler, category_values, target_encoding, feature_columns, numeric_cols_to_scale
 
-model, scaler, encoders, target_encoder, feature_columns = load_artifacts()
+model, scaler, category_values, target_encoding, feature_columns, numeric_cols_to_scale = load_artifacts()
+inverse_target = {v: k for k, v in target_encoding.items()}
+
+# Feature engineering
+def bp_category(systolic, diastolic):
+    if systolic < 120 and diastolic < 80: return 'Normal'
+    elif systolic < 130 and diastolic < 80: return 'Elevated'
+    else: return 'Hypertensive'
+
+def bmi_category(bmi):
+    if bmi < 18.5: return 'Underweight'
+    elif bmi < 25: return 'Normal'
+    elif bmi < 30: return 'Overweight'
+    else: return 'Obese'
+
+def blood_sugar_category(bs):
+    if bs < 100: return 'Normal'
+    elif bs < 126: return 'Prediabetic'
+    else: return 'Diabetic'
+
+def age_group(age):
+    if age < 13: return 'Child'
+    elif age < 30: return 'Young Adult'
+    elif age < 60: return 'Adult'
+    else: return 'Senior'
 
 # Styling
 st.markdown("""
@@ -171,7 +196,7 @@ with tab_predict:
         with c1:
             age = st.number_input("Age", 1, 100, 45, help="Patient age in years")
         with c2:
-            gender = st.selectbox("Gender", encoders['gender'].classes_)
+            gender = st.selectbox("Gender", category_values['gender'])
         st.markdown('</div>', unsafe_allow_html=True)
 
         st.markdown('<div class="card card-vitals"><div class="card-header">Vitals</div>', unsafe_allow_html=True)
@@ -195,9 +220,9 @@ with tab_predict:
         st.markdown('<div class="card card-case"><div class="card-header">Case Details</div>', unsafe_allow_html=True)
         c1, c2 = st.columns(2)
         with c1:
-            department = st.selectbox("Department", encoders['department'].classes_)
+            department = st.selectbox("Department", category_values['department'])
         with c2:
-            diagnosis = st.selectbox("Diagnosis", encoders['diagnosis'].classes_)
+            diagnosis = st.selectbox("Diagnosis", category_values['diagnosis'])
         st.markdown('</div>', unsafe_allow_html=True)
 
         submitted = st.form_submit_button("Predict Risk Level")
@@ -214,31 +239,65 @@ with tab_predict:
         for w in warnings:
             st.markdown(f'<div class="warning-pill">⚠️ {w}</div>', unsafe_allow_html=True)
 
-        row = {col: 0 for col in feature_columns}
-        row['age'] = age
-        row['gender'] = encoders['gender'].transform([gender])[0]
-        row['bmi'] = bmi
-        row['systolic_bp'] = systolic_bp
-        row['diastolic_bp'] = diastolic_bp
-        row['blood_sugar_mg_dl'] = blood_sugar
-        row['cholesterol_mg_dl'] = cholesterol
-        row['department'] = encoders['department'].transform([department])[0]
-        row['diagnosis'] = encoders['diagnosis'].transform([diagnosis])[0]
+        blood_group = category_values['blood_group'][0]
+        room_type = category_values['room_type'][0]
+        payment_method = category_values['payment_method'][0]
+        payment_status = category_values['payment_status'][0]
+        appointment_status = category_values['appointment_status'][0]
+        previous_admissions = 0
+        previous_appointments = 0
+        missed_previous_appointments = 0
+        admitted = 0
+        health_burden_score = previous_admissions + previous_appointments
 
-        input_df = pd.DataFrame([row])[feature_columns]
-        input_scaled = scaler.transform(input_df)
+        raw_input = {
+            'age': age, 'systolic_bp': systolic_bp, 'diastolic_bp': diastolic_bp,
+            'blood_sugar_mg_dl': blood_sugar, 'cholesterol_mg_dl': cholesterol,
+            'bmi': bmi, 'previous_admissions': previous_admissions,
+            'previous_appointments': previous_appointments,
+            'missed_previous_appointments': missed_previous_appointments,
+            'admitted': admitted, 'health_burden_score': health_burden_score,
+            'gender': gender, 'blood_group': blood_group, 'department': department,
+            'diagnosis': diagnosis, 'room_type': room_type, 'payment_method': payment_method,
+            'payment_status': payment_status, 'appointment_status': appointment_status,
+            'bp_category': bp_category(systolic_bp, diastolic_bp),
+            'bmi_category': bmi_category(bmi),
+            'blood_sugar_category': blood_sugar_category(blood_sugar),
+            'age_group': age_group(age),
+        }
 
-        pred = model.predict(input_scaled)[0]
-        pred_label = target_encoder.inverse_transform([pred])[0]
-        proba = model.predict_proba(input_scaled)[0]
+        row = pd.DataFrame(0, index=[0], columns=feature_columns, dtype=float)
+
+        nominal_cols = ['gender', 'blood_group', 'department', 'diagnosis', 'room_type',
+                         'payment_method', 'payment_status', 'appointment_status',
+                         'bp_category', 'bmi_category', 'blood_sugar_category', 'age_group']
+        for col in nominal_cols:
+            dummy_col = f"{col}_{raw_input[col]}"
+            if dummy_col in row.columns:
+                row.at[0, dummy_col] = 1
+
+        numeric_direct_cols = ['age', 'systolic_bp', 'diastolic_bp', 'blood_sugar_mg_dl',
+                                'cholesterol_mg_dl', 'bmi', 'previous_admissions',
+                                'previous_appointments', 'missed_previous_appointments',
+                                'admitted', 'health_burden_score']
+        for col in numeric_direct_cols:
+            if col in row.columns:
+                row.at[0, col] = raw_input[col]
+
+        row[numeric_cols_to_scale] = scaler.transform(row[numeric_cols_to_scale])
+
+        pred = model.predict(row)[0]
+        pred_label = inverse_target[pred]
+        proba = model.predict_proba(row)[0]
+        classes = [inverse_target[i] for i in range(len(proba))]
 
         st.session_state["result"] = {
             "label": pred_label,
             "proba": proba,
-            "classes": target_encoder.classes_,
+            "classes": classes,
         }
 
-    # Render result (persists across reruns via session_state)
+    # Render result
     if "result" in st.session_state:
         res = st.session_state["result"]
         pred_label = res["label"]
