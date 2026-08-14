@@ -7,14 +7,18 @@ import joblib
 st.set_page_config(page_title="SmartCare Risk Predictor", layout="wide")
 
 # Load model artifacts
+import os
+
+MODELS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'models')
+
 @st.cache_resource
 def load_artifacts():
-    model = joblib.load('disease_risk_model.pkl')
-    scaler = joblib.load('scaler.pkl')
-    category_values = joblib.load('category_values.pkl')
-    target_encoding = joblib.load('target_encoding.pkl')          # {'Low':0,'Medium':1,'High':2}
-    feature_columns = joblib.load('feature_columns.pkl')
-    numeric_cols_to_scale = joblib.load('numeric_cols_to_scale.pkl')
+    model = joblib.load(os.path.join(MODELS_DIR, 'disease_risk_model.pkl'))
+    scaler = joblib.load(os.path.join(MODELS_DIR, 'scaler.pkl'))
+    category_values = joblib.load(os.path.join(MODELS_DIR, 'category_values.pkl'))
+    target_encoding = joblib.load(os.path.join(MODELS_DIR, 'target_encoding.pkl'))
+    feature_columns = joblib.load(os.path.join(MODELS_DIR, 'feature_columns.pkl'))
+    numeric_cols_to_scale = joblib.load(os.path.join(MODELS_DIR, 'numeric_cols_to_scale.pkl'))
     return model, scaler, category_values, target_encoding, feature_columns, numeric_cols_to_scale
 
 model, scaler, category_values, target_encoding, feature_columns, numeric_cols_to_scale = load_artifacts()
