@@ -119,7 +119,7 @@ Model predictions are interpreted using **SHAP** (primary) and **LIME** (cross-v
 - **Ethical framing:** Since a missed High-risk patient is more costly than a false alarm, the prototype surfaces full class probabilities rather than just the predicted label, so predictions support — rather than replace — clinical judgement.
 
 ## 📋 Coursework Tasks Checklist
-- [ ] Task 01 – Problem Definition & Literature Review
+- [x] Task 01 – Problem Definition & Literature Review
 - [x] Task 02 – Dataset Understanding
 - [x] Task 03 – Data Preprocessing & Feature Engineering
 - [x] Task 04 – Exploratory Data Analysis
@@ -127,7 +127,7 @@ Model predictions are interpreted using **SHAP** (primary) and **LIME** (cross-v
 - [x] Task 06 – Model Evaluation
 - [x] Task 07 – Explainable AI Analysis
 - [x] Task 08 – AI Prototype Development
-- [ ] Task 09 – Technical Report
+- [x] Task 09 – Technical Report
 
 ## 📄 License
 This project is submitted as academic coursework for SLTC Research University (CCS3440 – Artificial Intelligence).
