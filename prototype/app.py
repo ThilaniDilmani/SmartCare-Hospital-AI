@@ -2,50 +2,31 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 import joblib
+import os
 
 # Page config
 st.set_page_config(page_title="SmartCare Risk Predictor", layout="wide")
-
-# Load model artifacts
-import os
 
 MODELS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'models')
 
 @st.cache_resource
 def load_artifacts():
     model = joblib.load(os.path.join(MODELS_DIR, 'disease_risk_model.pkl'))
-    scaler = joblib.load(os.path.join(MODELS_DIR, 'scaler.pkl'))
-    category_values = joblib.load(os.path.join(MODELS_DIR, 'category_values.pkl'))
+    encoder_unscaled = joblib.load(os.path.join(MODELS_DIR, 'encoder_unscaled.pkl'))
     target_encoding = joblib.load(os.path.join(MODELS_DIR, 'target_encoding.pkl'))
+    raw_input_columns = joblib.load(os.path.join(MODELS_DIR, 'raw_input_columns.pkl'))
     feature_columns = joblib.load(os.path.join(MODELS_DIR, 'feature_columns.pkl'))
-    numeric_cols_to_scale = joblib.load(os.path.join(MODELS_DIR, 'numeric_cols_to_scale.pkl'))
-    return model, scaler, category_values, target_encoding, feature_columns, numeric_cols_to_scale
+    return model, encoder_unscaled, target_encoding, raw_input_columns, feature_columns
 
-model, scaler, category_values, target_encoding, feature_columns, numeric_cols_to_scale = load_artifacts()
+model, encoder_unscaled, target_encoding, raw_input_columns, feature_columns = load_artifacts()
 inverse_target = {v: k for k, v in target_encoding.items()}
 
-# Feature engineering
-def bp_category(systolic, diastolic):
-    if systolic < 120 and diastolic < 80: return 'Normal'
-    elif systolic < 130 and diastolic < 80: return 'Elevated'
-    else: return 'Hypertensive'
-
-def bmi_category(bmi):
-    if bmi < 18.5: return 'Underweight'
-    elif bmi < 25: return 'Normal'
-    elif bmi < 30: return 'Overweight'
-    else: return 'Obese'
-
-def blood_sugar_category(bs):
-    if bs < 100: return 'Normal'
-    elif bs < 126: return 'Prediabetic'
-    else: return 'Diabetic'
-
-def age_group(age):
-    if age < 13: return 'Child'
-    elif age < 30: return 'Young Adult'
-    elif age < 60: return 'Adult'
-    else: return 'Senior'
+# Numeric vs categorical split, and valid category options — both derived directly
+# from the fitted encoder, so there's no separate category_values file to keep in sync
+numeric_cols_final = list(encoder_unscaled.transformers_[0][2])
+categorical_cols_final = list(encoder_unscaled.transformers_[1][2])
+cat_encoder = encoder_unscaled.named_transformers_['cat']
+category_values = dict(zip(categorical_cols_final, [list(c) for c in cat_encoder.categories_]))
 
 # Styling
 st.markdown("""
@@ -138,7 +119,6 @@ st.markdown("""
         border: 1px solid #E2E8F5;
     }
 
-    /* ---- Global font size increase ---- */
     html, body, [class*="css"] {
         font-size: 18px;
     }
@@ -170,7 +150,6 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# Sidebar - context + reset
 with st.sidebar:
     st.markdown("""
         <div style="background: linear-gradient(135deg, #1B4965, #0891A5);
@@ -190,7 +169,6 @@ with st.sidebar:
     st.divider()
     st.caption("SmartCare Disease Risk Predictor")
 
-# Tabs
 tab_predict, tab_about = st.tabs(["Predict", "How it works"])
 
 with tab_predict:
@@ -227,11 +205,17 @@ with tab_predict:
             department = st.selectbox("Department", category_values['department'])
         with c2:
             diagnosis = st.selectbox("Diagnosis", category_values['diagnosis'])
+        c3, c4, c5 = st.columns(3)
+        with c3:
+            previous_appointments = st.number_input("Previous Appointments", 0, 20, 2)
+        with c4:
+            missed_previous_appointments = st.number_input("Missed Appointments", 0, 10, 0)
+        with c5:
+            previous_admissions = st.number_input("Previous Admissions", 0, 20, 0)
         st.markdown('</div>', unsafe_allow_html=True)
 
         submitted = st.form_submit_button("Predict Risk Level")
 
-    # Gentle validation warnings shown after submit
     if submitted:
         warnings = []
         if systolic_bp >= 140 or diastolic_bp >= 90:
@@ -243,52 +227,20 @@ with tab_predict:
         for w in warnings:
             st.markdown(f'<div class="warning-pill">⚠️ {w}</div>', unsafe_allow_html=True)
 
-        blood_group = category_values['blood_group'][0]
-        room_type = category_values['room_type'][0]
-        payment_method = category_values['payment_method'][0]
-        payment_status = category_values['payment_status'][0]
-        appointment_status = category_values['appointment_status'][0]
-        previous_admissions = 0
-        previous_appointments = 0
-        missed_previous_appointments = 0
-        admitted = 0
-        health_burden_score = previous_admissions + previous_appointments
-
-        raw_input = {
-            'age': age, 'systolic_bp': systolic_bp, 'diastolic_bp': diastolic_bp,
-            'blood_sugar_mg_dl': blood_sugar, 'cholesterol_mg_dl': cholesterol,
-            'bmi': bmi, 'previous_admissions': previous_admissions,
+        # Build the raw input row using exactly the columns the encoder expects,
+        # in FINAL_PREDICTORS order — then let encoder_unscaled do all encoding at once
+        raw_row = pd.DataFrame([{
+            'age': age, 'gender': gender, 'blood_group': category_values.get('blood_group', ['A+'])[0],
+            'department': department, 'diagnosis': diagnosis,
+            'systolic_bp': systolic_bp, 'diastolic_bp': diastolic_bp,
+            'blood_sugar_mg_dl': blood_sugar, 'cholesterol_mg_dl': cholesterol, 'bmi': bmi,
             'previous_appointments': previous_appointments,
             'missed_previous_appointments': missed_previous_appointments,
-            'admitted': admitted, 'health_burden_score': health_burden_score,
-            'gender': gender, 'blood_group': blood_group, 'department': department,
-            'diagnosis': diagnosis, 'room_type': room_type, 'payment_method': payment_method,
-            'payment_status': payment_status, 'appointment_status': appointment_status,
-            'bp_category': bp_category(systolic_bp, diastolic_bp),
-            'bmi_category': bmi_category(bmi),
-            'blood_sugar_category': blood_sugar_category(blood_sugar),
-            'age_group': age_group(age),
-        }
+            'previous_admissions': previous_admissions,
+        }])[raw_input_columns]
 
-        row = pd.DataFrame(0, index=[0], columns=feature_columns, dtype=float)
-
-        nominal_cols = ['gender', 'blood_group', 'department', 'diagnosis', 'room_type',
-                         'payment_method', 'payment_status', 'appointment_status',
-                         'bp_category', 'bmi_category', 'blood_sugar_category', 'age_group']
-        for col in nominal_cols:
-            dummy_col = f"{col}_{raw_input[col]}"
-            if dummy_col in row.columns:
-                row.at[0, dummy_col] = 1
-
-        numeric_direct_cols = ['age', 'systolic_bp', 'diastolic_bp', 'blood_sugar_mg_dl',
-                                'cholesterol_mg_dl', 'bmi', 'previous_admissions',
-                                'previous_appointments', 'missed_previous_appointments',
-                                'admitted', 'health_burden_score']
-        for col in numeric_direct_cols:
-            if col in row.columns:
-                row.at[0, col] = raw_input[col]
-
-        row[numeric_cols_to_scale] = scaler.transform(row[numeric_cols_to_scale])
+        encoded = encoder_unscaled.transform(raw_row)
+        row = pd.DataFrame(encoded, columns=encoder_unscaled.get_feature_names_out())[feature_columns]
 
         pred = model.predict(row)[0]
         pred_label = inverse_target[pred]
@@ -301,7 +253,6 @@ with tab_predict:
             "classes": classes,
         }
 
-    # Render result
     if "result" in st.session_state:
         res = st.session_state["result"]
         pred_label = res["label"]
@@ -336,7 +287,6 @@ with tab_predict:
                 st.metric(label=cls, value=f"{proba[i]*100:.1f}%")
 
         proba_df = pd.DataFrame({"Risk Level": classes, "Probability": proba})
-
         risk_order = [c for c in ["Low", "Medium", "High"] if c in list(classes)]
         color_domain = risk_order
         color_range = [risk_colors.get(lvl, "#1B4965") for lvl in risk_order]
@@ -347,15 +297,8 @@ with tab_predict:
             .encode(
                 x=alt.X("Risk Level:N", sort=risk_order, title=None),
                 y=alt.Y("Probability:Q", title="Probability", axis=alt.Axis(format="%")),
-                color=alt.Color(
-                    "Risk Level:N",
-                    scale=alt.Scale(domain=color_domain, range=color_range),
-                    legend=None,
-                ),
-                tooltip=[
-                    alt.Tooltip("Risk Level:N"),
-                    alt.Tooltip("Probability:Q", format=".1%"),
-                ],
+                color=alt.Color("Risk Level:N", scale=alt.Scale(domain=color_domain, range=color_range), legend=None),
+                tooltip=[alt.Tooltip("Risk Level:N"), alt.Tooltip("Probability:Q", format=".1%")],
             )
             .properties(height=280)
         )
@@ -368,8 +311,10 @@ with tab_about:
     The model was trained on the **SmartCare Hospital dataset** to classify patients into
     three disease risk categories - **Low, Medium, High** - based on demographic and
     clinical inputs (age, gender, BMI, blood pressure, blood sugar, cholesterol,
-    department, and diagnosis).
+    department, diagnosis, and appointment/admission history).
 
     **Note:** This is an academic prototype for coursework purposes. It is not validated
     for real clinical use and should not be used to make actual medical decisions.
+    Predicted probabilities have not been formally calibration-tested; relative ranking
+    between classes should be treated as more reliable than the exact percentage shown.
     """)
