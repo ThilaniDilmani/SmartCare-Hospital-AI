@@ -1,1 +1,13 @@
-
+Patient Input
+      ↓
+Data Preprocessing
+      ↓
+Feature Engineering
+      ↓
+Logistic Regression Model
+      ↓
+Risk Prediction
+      ↓
+SHAP Explanation
+      ↓
+User Interface
