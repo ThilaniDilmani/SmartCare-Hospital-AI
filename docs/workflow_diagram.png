@@ -1,0 +1,15 @@
+ Dataset
+   ↓
+ Cleaning
+   ↓
+  EDA
+   ↓
+Feature Engineering
+   ↓
+Model Training
+   ↓
+Evaluation
+   ↓
+SHAP Analysis
+   ↓
+Deployment
