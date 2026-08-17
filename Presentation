@@ -1,0 +1,34 @@
+# Presentation
+
+This folder contains presentation materials for the SmartCare Hospital AI coursework (CCS3440).
+
+## Contents
+
+- **slides.pptx** — Presentation slides summarizing the project: problem definition, methodology, results, and conclusions.
+- **video_demo.mp4** (or link) — 5–10 minute video demonstration of the AI prototype in action, as required by the coursework submission checklist.
+- **screenshots/** — Screenshots of the working prototype (Streamlit/Flask app) showing user input, predictions, and results display.
+
+## Presentation Outline
+
+Slides should generally follow the structure of the technical report:
+
+1. **Title Slide** — Project name, group members, module code (CCS3440)
+2. **Introduction & Problem Definition** — Selected prediction task (No-Show / Readmission / Disease Risk)
+3. **Literature Review Summary** — Key findings from reviewed papers, research gap
+4. **Dataset Overview** — Description of `smartcare_ai_dataset_1000.csv`, key attributes
+5. **Data Preprocessing & Feature Engineering** — Key decisions and justifications
+6. **Exploratory Data Analysis** — Key visualizations and insights
+7. **Model Development** — Models trained (minimum 3), hyperparameters
+8. **Model Evaluation** — Comparison table, best-performing model
+9. **Explainable AI Analysis** — SHAP/LIME/Feature Importance insights
+10. **Prototype Demo** — Screenshots or live demo walkthrough
+11. **Results & Discussion**
+12. **Conclusion & Future Work**
+13. **References**
+
+## Notes
+
+- Keep slides concise — use visuals (charts, tables, screenshots) rather than dense text blocks.
+- Ensure every group member can individually explain their contributions, as this ties into the Viva Examination component.
+- Video demonstration should walk through the prototype accepting input, generating a prediction, and displaying results.
+- Align slide content with the final Technical Report (Task 09) to keep the story consistent.

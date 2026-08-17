@@ -1,0 +1,7 @@
+Model,Dataset used,Accuracy,Precision (macro),Recall (macro),F1 (macro)
+Logistic Regression,unscaled,0.97,0.9697,0.9583,0.9636
+Stacking Ensemble (bonus),unscaled,0.945,0.9494,0.9307,0.9395
+Voting Ensemble (bonus),unscaled,0.87,0.8784,0.8299,0.8494
+XGBoost,unscaled,0.845,0.8575,0.793,0.8166
+Random Forest,unscaled,0.79,0.8299,0.7144,0.7458
+Decision Tree,unscaled,0.675,0.6646,0.6736,0.6682

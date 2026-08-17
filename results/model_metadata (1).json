@@ -1,57 +1,57 @@
 {
   "Logistic Regression": {
     "file": "logistic_regression.joblib",
-    "dataset": "scaled",
-    "cv_f1_macro": 0.9295,
+    "dataset": "unscaled",
+    "cv_f1_macro": 0.9654,
     "best_params": {
-      "C": 10,
-      "penalty": "l2",
-      "solver": "lbfgs"
+      "clf__C": 100,
+      "clf__penalty": "l2",
+      "clf__solver": "lbfgs"
     }
   },
   "Decision Tree": {
     "file": "decision_tree.joblib",
     "dataset": "unscaled",
-    "cv_f1_macro": 0.7312,
+    "cv_f1_macro": 0.7339,
     "best_params": {
       "criterion": "entropy",
-      "max_depth": 12,
-      "min_samples_leaf": 2,
-      "min_samples_split": 5
+      "max_depth": 8,
+      "min_samples_leaf": 1,
+      "min_samples_split": 2
     }
   },
   "Random Forest": {
     "file": "random_forest.joblib",
     "dataset": "unscaled",
-    "cv_f1_macro": 0.7887,
+    "cv_f1_macro": 0.8181,
     "best_params": {
       "max_depth": 10,
       "min_samples_leaf": 2,
-      "min_samples_split": 2,
+      "min_samples_split": 5,
       "n_estimators": 100
     }
   },
   "XGBoost": {
     "file": "xgboost.joblib",
     "dataset": "unscaled",
-    "cv_f1_macro": 0.8613,
+    "cv_f1_macro": 0.8658,
     "best_params": {
       "learning_rate": 0.2,
       "max_depth": 3,
-      "n_estimators": 200,
-      "subsample": 0.8
+      "n_estimators": 100,
+      "subsample": 1.0
     }
   },
   "Voting Ensemble (bonus)": {
     "file": "voting_ensemble.joblib",
     "dataset": "unscaled",
-    "cv_f1_macro": 0.8845,
+    "cv_f1_macro": 0.8991,
     "best_params": "combination of the four tuned models above (soft voting)"
   },
   "Stacking Ensemble (bonus)": {
     "file": "stacking_ensemble.joblib",
     "dataset": "unscaled",
-    "cv_f1_macro": 0.914,
+    "cv_f1_macro": 0.967,
     "best_params": "combination of the four tuned models above + LogisticRegression meta-model"
   }
 }
