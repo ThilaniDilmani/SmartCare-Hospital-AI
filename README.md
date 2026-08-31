@@ -6,14 +6,14 @@ An end-to-end ML pipeline that classifies hospital patients into disease risk ca
 with explainability analysis, fairness checks, and a Streamlit prototype for interactive
 predictions.
 
-## 📌 Module Information
+## Module Information
 - **Module Code:** CCS3440
 - **Module Name:** Artificial Intelligence
 - **Institution:** Sri Lanka Technology Campus
 - **Lecturer in Charge:** Dr. Chameera De Silva
 - **Teaching Assistants:** Mr. Chamod Hewage, Mr. Pamod Dilshan
 
-## 👥 Team Members
+## Team Members
 | Name | Student ID | Task |
 |------|-----------|------|
 | Volga Indeewari | CIT-23-02-0159 | Task 01 & 02 – Problem Definition & Dataset Understanding |
@@ -21,13 +21,13 @@ predictions.
 | S.A. Thilani Dilmani | CIT-23-02-0173 | Task 05 & 06 – Model Development & Evaluation |
 | R.M. Nuwani Umanda | CIT-23-02-0153 | Task 07 & 08 – Explainable AI & Prototype |
 
-## 🎯 Selected Prediction Task
+## Selected Prediction Task
 **Option C – Disease Risk Classification**: a multi-class model (Low / Medium / High) that
 combines patient demographics, clinical readings (blood pressure, blood sugar, cholesterol,
 BMI), and hospital-operations data (admissions, length of stay, treatment/lab counts) to
 flag disease risk.
 
-## 📂 Project Structure
+## Project Structure
 ```
 SmartCare-Hospital-AI/
 │
@@ -84,16 +84,16 @@ SmartCare-Hospital-AI/
 └── README.md
 ```
 
-## 🛠️ Technologies Used
+## Technologies Used
 - **Language:** Python
-- **Environment:** Jupyter Notebook / Google Colab
+- **Environment:** Google Colab
 - **Data Analysis:** Pandas, NumPy
 - **Visualization:** Matplotlib, Seaborn, Plotly
 - **Machine Learning:** Scikit-Learn, XGBoost
 - **Explainable AI:** SHAP, LIME
-- **Prototype:** Streamlit, Altair
+- **Prototype:** Streamlit
 
-## 📊 Dataset
+## Dataset
 `data/smartcare_ai_dataset_1000.csv` contains 1,000 synthetic hospital records covering:
 - **Patient info:** age, gender, blood group
 - **Clinical readings:** blood pressure, blood sugar, cholesterol, BMI
@@ -104,7 +104,7 @@ SmartCare-Hospital-AI/
 See `data/smartcare_ai_dataset_data_dictionary.csv` for the full column reference (the dataset
 also carries two other potential targets, `no_show` and `readmitted_30_days`, not used here).
 
-## 🚀 How to Run
+## How to Run
 
 ### 1. Clone the repository
 ```bash
@@ -132,7 +132,7 @@ streamlit run prototype/app.py
 The app loads `models/disease_risk_model.pkl` and its accompanying encoder/column artifacts
 from `models/`, so keep the folder structure intact when running locally.
 
-## 📈 Models Trained
+## Models Trained
 All six models were tuned via 5-fold stratified cross-validation using **macro-F1** as the
 scoring metric (chosen over accuracy so the minority `Low`-risk class isn't drowned out by
 `Medium`/`High`). Held-out test-set results:
@@ -156,7 +156,7 @@ categorical features (e.g. `age_group`, `bmi_category`) already capture the shar
 separation between risk classes — leaving little extra signal for tree-based flexibility to
 exploit, especially with only 800 training rows.
 
-## 🔍 Explainable AI
+## Explainable AI
 Predictions from the best model (Logistic Regression) are interpreted with **SHAP** (primary)
 and **LIME** (cross-check):
 - **Global explanations:** SHAP beeswarm/bar plots (`results/shap_summary.png`) rank
@@ -172,13 +172,13 @@ and **LIME** (cross-check):
   prototype surfaces full class probabilities rather than just the predicted label, so the
   model supports — rather than replaces — clinical judgement.
 
-## 🖥️ Prototype
+## Prototype
 The Streamlit app (`prototype/app.py`) takes raw patient inputs, applies the same
 preprocessing pipeline used in training, and returns a predicted risk level with class
 probabilities. See `prototype/input_page.png.png` and `prototype/prediction_result.png.png`
 for screenshots of the input form and results view.
 
-## 📋 Coursework Tasks Checklist
+## Coursework Tasks Checklist
 - [x] Task 01 – Problem Definition & Literature Review
 - [x] Task 02 – Dataset Understanding
 - [x] Task 03 – Data Preprocessing & Feature Engineering
@@ -189,12 +189,12 @@ for screenshots of the input form and results view.
 - [x] Task 08 – AI Prototype Development
 - [x] Task 09 – Technical Report 
 
-## 📄 License
-Submitted as academic coursework for SLTC Research University (CCS3440 – Artificial
+## License
+Submitted as academic coursework for SLTC (CCS3440 – Artificial
 Intelligence). Not licensed for external reuse.
 
-## 🙏 Acknowledgements
-Dataset provided by SLTC Research University for CCS3440 coursework purposes.
+## Acknowledgements
+Dataset provided by SLTC for CCS3440 coursework purposes.
   
 
 
