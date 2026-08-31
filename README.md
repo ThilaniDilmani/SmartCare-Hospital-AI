@@ -9,7 +9,7 @@ predictions.
 ## 📌 Module Information
 - **Module Code:** CCS3440
 - **Module Name:** Artificial Intelligence
-- **Institution:** SLTC Research University
+- **Institution:** Sri Lanka Technology Campus
 - **Lecturer in Charge:** Dr. Chameera De Silva
 - **Teaching Assistants:** Mr. Chamod Hewage, Mr. Pamod Dilshan
 
